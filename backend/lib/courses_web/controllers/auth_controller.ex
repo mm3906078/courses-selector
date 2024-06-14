@@ -15,7 +15,7 @@ defmodule CoursesWeb.AuthController do
     User
   }
 
-  @tag_user "User"
+  @tag_user "Auth"
 
   def fetch_current_user(conn, _params) do
     case get_req_header(conn, "authorization") do
@@ -33,6 +33,17 @@ defmodule CoursesWeb.AuthController do
           {:error, _reason} ->
             conn
         end
+
+      _ ->
+        conn
+    end
+  end
+
+  def user_only(conn, _params) do
+    case conn.assigns[:current_user] do
+      nil ->
+        Logger.info("No user found")
+        conn |> put_status(:unauthorized) |> render("error.json", %{reason: "Unauthorized"})
 
       _ ->
         conn
@@ -69,7 +80,7 @@ defmodule CoursesWeb.AuthController do
         description: "Student ID",
         required: true,
         type: :string,
-        example: "123456"
+        example: "e6bc16c5-319a-43bb-9ecc-77bfd5f8f417"
       ],
       password: [
         in: :query,
@@ -170,6 +181,50 @@ defmodule CoursesWeb.AuthController do
       conn ->
         {:ok, users} = Accounts.list_users()
         render(conn, "list.json", %{users: users})
+    end
+  end
+
+  operation(:remove,
+    summary: "Remove user",
+    tags: [@tag_user],
+    description: "Remove a user",
+    parameters: [
+      %{
+        in: :path,
+        name: "student_id",
+        description: "Student ID",
+        required: true,
+        schema: %{
+          type: :string
+        }
+      }
+    ],
+    responses: [
+      ok: {"User removed", "application/json", UserResponse},
+      internal_server_error: {"Failed to remove user", "application/json", FailedResponse}
+    ]
+  )
+
+  def remove(conn, %{"student_id" => student_id}) do
+    conn
+    |> fetch_current_user(%{"student_id" => student_id})
+    |> admin_only(%{"student_id" => student_id})
+    |> case do
+      %{status: 401} = conn ->
+        conn
+
+      conn ->
+        case Accounts.remove_user(student_id) do
+          {:ok, user} ->
+            conn
+            |> put_status(:ok)
+            |> render("remove.json", user: user)
+
+          {:error, reason} ->
+            conn
+            |> put_status(:internal_server_error)
+            |> render("error.json", %{reason: reason})
+        end
     end
   end
 end

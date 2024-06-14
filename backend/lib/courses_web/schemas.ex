@@ -53,8 +53,8 @@ defmodule CoursesWeb.Schemas do
       example: %{
         "id" => "123456",
         "name" => "Math 101",
-        "days" => "MWF",
-        "time" => "10:00 AM"
+        "days" => "Tuesday - Thursday",
+        "time" => "10:00 AM - 11:30 AM"
       }
     })
   end

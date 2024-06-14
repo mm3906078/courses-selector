@@ -39,7 +39,7 @@ defmodule CoursesWeb.Router do
 
     get("/courses", CourseController, :index)
     post("/courses/create", CourseController, :create)
-    post("/courses/remove/:id", CourseController, :remove)
+    delete("/courses/remove/:id", CourseController, :remove)
   end
 
   scope "/api/v1", CoursesWeb do

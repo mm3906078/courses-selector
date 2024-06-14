@@ -10,6 +10,15 @@ services:
       - '127.0.0.1:2380:2380' # peer port
     volumes:
       - etcd-data:/etcd_data
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '127.0.0.1:4000:4000' # backend port
+    depends_on:
+      - etcd
 
 volumes:
   etcd-data:

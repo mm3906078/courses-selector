@@ -5,96 +5,120 @@ defmodule CoursesWeb.CourseController do
   alias Courses.Courses
 
   alias CoursesWeb.AuthController
+
   alias CoursesWeb.Schemas.{
     CourseResponse,
     FailedResponse,
     CourseList
   }
 
+  @tag_course "Course"
+
   operation(:index,
     summary: "List courses",
+    description: "List all courses",
+    tags: [@tag_course],
     parameters: [
       page: [
         in: :query,
         description: "Page number",
         required: false,
-        type: :integer
+        type: :integer,
+        example: 1
       ],
       limit: [
         in: :query,
         description: "Number of courses per page",
         required: false,
-        type: :integer
+        type: :integer,
+        example: 10
       ],
       course_id: [
         in: :query,
         description: "Course ID",
         required: false,
-        type: :string
+        type: :string,
+        example: "123456"
       ],
       name: [
         in: :query,
         description: "Course name",
         required: false,
-        type: :string
+        type: :string,
+        example: "Math 101"
       ],
       days: [
         in: :query,
         description: "Days of the week",
         required: false,
-        type: :string
+        type: :string,
+        example: "Tuesday - Thursday"
       ],
       time: [
         in: :query,
         description: "Time of day",
         required: false,
-        type: :string
+        type: :string,
+        example: "10:00 AM - 11:30 AM"
       ]
     ],
     responses: [
       ok: {"Courses listed", "application/json", CourseList},
       internal_server_error: {"Failed to get list courses", "application/json", FailedResponse}
-    ]
+    ],
+    security: []
   )
 
   def index(conn, params) do
-    case Courses.list_courses(params) do
-      {:ok, courses} ->
+    conn
+    |> AuthController.fetch_current_user(params)
+    |> case do
+      %{status: 401} = conn ->
         conn
-        |> put_status(:ok)
-        |> render("index.json", courses: courses)
 
-      {:error, reason} ->
-        conn
-        |> put_status(:internal_server_error)
-        |> render("error.json", %{reason: reason})
+      conn ->
+        case Courses.list_courses(params) do
+          {:ok, courses} ->
+            conn
+            |> put_status(:ok)
+            |> render("index.json", courses: courses)
+
+          {:error, reason} ->
+            conn
+            |> put_status(:internal_server_error)
+            |> render("error.json", %{reason: reason})
+        end
     end
   end
 
   operation(:create,
     summary: "Create course",
     description: "Create a new course",
+    tags: [@tag_course],
     parameters: [
       name: [
         in: :query,
         name: "name",
         description: "Course name",
         required: true,
-        type: :string
+        type: :string,
+        example: "Math 101"
       ],
       days: [
         in: :query,
         name: "days",
         description: "Days of the week",
         required: true,
-        type: :string
+        type: :string,
+        example: "Tuesday - Thursday"
       ],
       time: [
         in: :query,
         name: "time",
         description: "Time of day",
         required: true,
-        type: :string
+        type: :string,
+        example: "10:00 AM - 11:30 AM"
       ]
     ],
     responses: [
@@ -105,8 +129,8 @@ defmodule CoursesWeb.CourseController do
 
   def create(conn, %{"name" => name, "days" => days, "time" => time}) do
     conn
-    |> AuthController.current_user()
-    |> AuthController.admin_only()
+    |> AuthController.fetch_current_user(%{"name" => name, "days" => days, "time" => time})
+    |> AuthController.admin_only(%{"name" => name, "days" => days, "time" => time})
     |> case do
       %{status: 401} = conn ->
         conn
@@ -129,16 +153,15 @@ defmodule CoursesWeb.CourseController do
   operation(:remove,
     summary: "Remove course",
     description: "Remove a course",
+    tags: [@tag_course],
     parameters: [
-      %{
+      id: [
         in: :path,
-        name: "id",
         description: "Course ID",
         required: true,
-        schema: %{
-          type: :string
-        }
-      }
+        type: :string,
+        example: "a979aa36-fb7a-4d04-bdb7-8200e7c719bd"
+      ]
     ],
     responses: [
       ok: {"Course removed", "application/json", CourseResponse},
@@ -147,16 +170,25 @@ defmodule CoursesWeb.CourseController do
   )
 
   def remove(conn, %{"id" => id}) do
-    case Courses.remove_course(id) do
-      {:ok, course} ->
+    conn
+    |> AuthController.fetch_current_user(%{"id" => id})
+    |> AuthController.admin_only(%{"id" => id})
+    |> case do
+      %{status: 401} = conn ->
         conn
-        |> put_status(:ok)
-        |> render("remove.json", course: course)
 
-      {:error, reason} ->
-        conn
-        |> put_status(:internal_server_error)
-        |> render("error.json", %{reason: reason})
+      conn ->
+        case Courses.remove_course(id) do
+          {:ok, course} ->
+            conn
+            |> put_status(:ok)
+            |> render("remove.json", course: course)
+
+          {:error, reason} ->
+            conn
+            |> put_status(:internal_server_error)
+            |> render("error.json", %{reason: reason})
+        end
     end
   end
 end

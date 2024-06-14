@@ -14,4 +14,8 @@ defmodule CoursesWeb.AuthJSON do
   def render("list.json", %{users: users}) do
     %{users: users}
   end
+
+  def render("remove.json", %{user: user}) do
+    %{user: user}
+  end
 end

@@ -39,6 +39,7 @@ defmodule Courses.MixProject do
       {:poison, "~> 5.0"},
       {:jason, "~> 1.2"},
       {:uuid, "~> 1.1"},
+      {:timex, "~> 3.7"},
       {:ecto_sql, "~> 3.7"},
       {:cors_plug, "~> 3.0"},
       {:open_api_spex, "~> 3.18"},
