@@ -1,6 +1,10 @@
 # Use the official Elixir image as the base image
 FROM elixir:1.15-slim
 
+# Install inotify-tools
+RUN apt-get update && \
+    apt-get install -y inotify-tools
+
 # Set the working directory inside the container
 WORKDIR /app
 
@@ -17,4 +21,4 @@ COPY . .
 RUN mix compile
 
 # Set the default command to start the application
-CMD ["mix", "run", "--no-halt"]
+CMD ["iex", "-S", "mix", "phx.server"]

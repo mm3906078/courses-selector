@@ -1,5 +1,37 @@
 defmodule Courses.User do
   require Logger
+  use Ecto.Schema
+  import Ecto.Changeset
+  alias OpenApiSpex.Schema
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  schema "users" do
+    field :name, :string
+    field :email, :string
+
+    timestamps()
+  end
+
+  @spec schema() :: Schema.t()
+  def schema do
+    %Schema{
+      title: "User",
+      description: "A user of the system",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        name: %Schema{type: :string},
+        email: %Schema{type: :string, format: :email}
+      },
+      required: [:name, :email]
+    }
+  end
+
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [:name, :email])
+    |> validate_required([:name, :email])
+  end
 
   def enroll_user(user, course_id) do
     user = Enum.into(user, %{}, fn {k, v} -> {String.to_atom(k), v} end)
