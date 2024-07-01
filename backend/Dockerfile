@@ -21,4 +21,4 @@ COPY . .
 RUN mix compile
 
 # Set the default command to start the application
-CMD ["iex", "-S", "mix", "phx.server"]
+CMD ["mix", "phx.server"]
