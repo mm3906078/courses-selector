@@ -32,6 +32,7 @@ defmodule CoursesWeb.Router do
     post("/login", AuthController, :login)
     post("/register", AuthController, :register)
     get("/list", AuthController, :list)
+    delete("/remove/:id", AuthController, :remove)
   end
 
   scope "/api/v1", CoursesWeb do

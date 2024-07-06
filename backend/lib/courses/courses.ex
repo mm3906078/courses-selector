@@ -3,12 +3,13 @@ defmodule Courses.Courses do
   require UUID
   require Logger
 
-  def create_course(name, days, time) do
+  def create_course(name, days, time, professor) do
     course = %{
       course_id: UUID.uuid4(),
       name: name,
       days: days,
-      time: time
+      time: time,
+      professor: professor
     }
 
     with {:ok, course_str} <- Jason.encode(course),
@@ -48,12 +49,8 @@ defmodule Courses.Courses do
     case EtcdEx.get(Courses.Etcd, "courses/", prefix: true) do
       {:ok, res} ->
         courses =
-          Enum.map(res.kvs, fn kv ->
-            case Jason.decode(kv.value) do
-              {:ok, course} -> course
-              {:error, _} -> nil
-            end
-          end)
+          res.kvs
+          |> Enum.map(&parse_course/1)
           # Remove any nil values
           |> Enum.filter(& &1)
 
@@ -78,7 +75,7 @@ defmodule Courses.Courses do
               {key, value} ->
                 value == nil or value == "" or Map.get(course, key) == value
             end) and
-              (parsed_days == [] or Enum.any?(parsed_days, &(&1 in parse_days(course["days"])))) and
+              (parsed_days == [] or Enum.any?(parsed_days, &(&1 in course["days"]))) and
               (time == nil or time == "" or within_time_range?(course["time"], time))
           end)
 
@@ -106,9 +103,16 @@ defmodule Courses.Courses do
     end
   end
 
-  def parse_days(days) do
+  defp parse_course(%{value: value}) do
+    case Jason.decode(value) do
+      {:ok, course} -> course
+      {:error, _} -> nil
+    end
+  end
+
+  defp parse_days(days) when is_binary(days) do
     days
-    |> String.split("-", trim: true)
+    |> String.split(",")
     |> Enum.map(&String.trim/1)
   end
 

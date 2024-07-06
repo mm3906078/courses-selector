@@ -4,36 +4,51 @@ defmodule Courses.Accounts do
 
   require Logger
 
-  def create_user(email, password, name) do
-    user = %{
-      student_id: UUID.uuid4(),
-      email: email,
-      name: name,
-      password: Base.encode64(password),
-      role: "student"
-    }
+  def create_user(email, password, name, role) do
+    # make sure all elements are strings
+    password = to_string(password)
+    email = to_string(email)
+    name = to_string(name)
+    role = to_string(role)
 
-    # Check if user already exists
-    case EtcdEx.get(Courses.Etcd, "users/emails/#{email}") do
-      {:ok, res} ->
-        if res.count > 0 do
-          {:error, "User already exists"}
-        else
-          with {:ok, user_str} <- Jason.encode(user),
-               {:ok, _} <- EtcdEx.put(Courses.Etcd, "users/#{user.student_id}", user_str),
-               {:ok, _} <- EtcdEx.put(Courses.Etcd, "users/emails/#{email}", user.student_id) do
-            {:ok, Map.delete(user, :password)}
-          else
-            {:error, _} -> {:error, "Failed to register user"}
-          end
+    # check if password or email are not empty
+    if password == "" or email == "" do
+      {:error, "Email or password cannot be empty"}
+    else
+      if role != "admin" and role != "student" do
+        {:error, "Invalid role"}
+      else
+        user = %{
+          student_id: UUID.uuid4(),
+          email: email,
+          name: name,
+          password: Base.encode64(password),
+          role: role
+        }
+
+        # Check if user already exists
+        case EtcdEx.get(Courses.Etcd, "users/emails/#{email}") do
+          {:ok, res} ->
+            if res.count > 0 do
+              {:error, "User already exists"}
+            else
+              with {:ok, user_str} <- Jason.encode(user),
+                   {:ok, _} <- EtcdEx.put(Courses.Etcd, "users/#{user.student_id}", user_str),
+                   {:ok, _} <- EtcdEx.put(Courses.Etcd, "users/emails/#{email}", user.student_id) do
+                {:ok, Map.delete(user, :password)}
+              else
+                {:error, _} -> {:error, "Failed to register user"}
+              end
+            end
+
+          {:error, _} ->
+            {:error, "Failed to register user"}
         end
-
-      {:error, _} ->
-        {:error, "Failed to register user"}
+      end
     end
   end
 
-  def authenticate_user(student_id, password) do
+  def authenticate_user_stid(student_id, password) do
     case EtcdEx.get(Courses.Etcd, "users/#{student_id}") do
       {:ok, %{kvs: [kv | _]}} ->
         case Jason.decode(kv.value) do
@@ -56,16 +71,38 @@ defmodule Courses.Accounts do
     end
   end
 
+  def authenticate_user_email(email, password) do
+    # make sure all elements are strings
+    email = to_string(email)
+    password = to_string(password)
+
+    case EtcdEx.get(Courses.Etcd, "users/emails/#{email}") do
+      {:ok, %{kvs: [kv | _]}} ->
+        case authenticate_user_stid(kv.value, password) do
+          {:ok, user} -> {:ok, user}
+          {:error, reason} -> {:error, reason}
+        end
+
+      {:ok, %{kvs: []}} ->
+        {:error, "User not found"}
+
+      {:error, _} ->
+        {:error, "Invalid email or password"}
+    end
+  end
+
   def list_users do
     case EtcdEx.get(Courses.Etcd, "users/", prefix: true) do
       {:ok, res} ->
         users =
-          Enum.map(res.kvs, fn kv ->
+          res.kvs
+          |> Enum.map(fn kv ->
             case Jason.decode(kv.value) do
               {:ok, user} -> Map.delete(user, "password")
               {:error, _} -> nil
             end
           end)
+          |> Enum.filter(&(&1 != nil))
 
         {:ok, users}
 
@@ -109,6 +146,22 @@ defmodule Courses.Accounts do
         case Jason.decode(kv.value) do
           {:ok, user} -> user
           {:error, _} -> nil
+        end
+
+      {:ok, %{kvs: []}} ->
+        nil
+
+      {:error, _} ->
+        nil
+    end
+  end
+
+  def get_user_by_email(email) do
+    case EtcdEx.get(Courses.Etcd, "users/emails/#{email}") do
+      {:ok, %{kvs: [kv | _]}} ->
+        case get_user_by_id(kv.value) do
+          user when is_map(user) -> user
+          _ -> nil
         end
 
       {:ok, %{kvs: []}} ->

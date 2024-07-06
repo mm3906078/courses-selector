@@ -25,6 +25,29 @@ defmodule CoursesWeb.Schemas do
     })
   end
 
+  defmodule CreateCourseRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CreateCourseRequest",
+      description: "Schema for creating a new course",
+      type: :object,
+      properties: %{
+        name: %OpenApiSpex.Schema{type: :string, description: "Course name"},
+        days: %OpenApiSpex.Schema{type: :array, description: "Days of the week"},
+        time: %OpenApiSpex.Schema{type: :string, description: "Time of day"},
+        professor: %OpenApiSpex.Schema{type: :string, description: "Professor's name"}
+      },
+      required: ["name", "days", "time", "professor"],
+      example: %{
+        "name" => "Math 101",
+        "days" => ["Tuesday", "Thursday"],
+        "time" => "10:00 AM - 11:30 AM",
+        "professor" => "Dr. Smith"
+      }
+    })
+  end
+
   defmodule Course do
     require OpenApiSpex
 
@@ -55,6 +78,64 @@ defmodule CoursesWeb.Schemas do
         "name" => "Math 101",
         "days" => "Tuesday - Thursday",
         "time" => "10:00 AM - 11:30 AM"
+      }
+    })
+  end
+
+  defmodule LoginUserRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "LoginUserRequest",
+      description: "Schema for logging in a user",
+      type: :object,
+      properties: %{
+        email: %OpenApiSpex.Schema{
+          type: :string,
+          format: :email,
+          description: "Email address of the user"
+        },
+        password: %OpenApiSpex.Schema{
+          type: :string,
+          format: :password,
+          description: "Password for the new user"
+        }
+      },
+      required: ["email", "password"],
+      example: %{
+        "email" => "test@test.com",
+        "password" => "password"
+      }
+    })
+  end
+
+  defmodule CreateUserRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "CreateUserRequest",
+      description: "Schema for creating a new user",
+      type: :object,
+      properties: %{
+        email: %OpenApiSpex.Schema{
+          type: :string,
+          format: :email,
+          description: "Email address of the user"
+        },
+        password: %OpenApiSpex.Schema{
+          type: :string,
+          format: :password,
+          description: "Password for the new user"
+        },
+        name: %OpenApiSpex.Schema{type: :string, description: "Name of the user"},
+        role: %OpenApiSpex.Schema{type: :string, description: "Role of the user"}
+      },
+      required: ["email", "password", "name", "role"],
+      example: %{
+        "email" => "test@test.com",
+        "password" => "password",
+        "name" => "Test User",
+        "role" => "student"
       }
     })
   end
@@ -130,6 +211,19 @@ defmodule CoursesWeb.Schemas do
           email: "test@test.com",
           name: "Test User"
         }
+      }
+    })
+  end
+
+  defmodule RemoveUserResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "RemoveUserResponse",
+      description: "Response to a remove user request",
+      type: :object,
+      properties: %{
+        user: User
       }
     })
   end

@@ -9,7 +9,8 @@ defmodule CoursesWeb.CourseController do
   alias CoursesWeb.Schemas.{
     CourseResponse,
     FailedResponse,
-    CourseList
+    CourseList,
+    CreateCourseRequest
   }
 
   @tag_course "Course"
@@ -51,8 +52,8 @@ defmodule CoursesWeb.CourseController do
         in: :query,
         description: "Days of the week",
         required: false,
-        type: :string,
-        example: "Tuesday - Thursday"
+        type: :array,
+        example: ["Monday", "Wednesday"]
       ],
       time: [
         in: :query,
@@ -60,6 +61,13 @@ defmodule CoursesWeb.CourseController do
         required: false,
         type: :string,
         example: "10:00 AM - 11:30 AM"
+      ],
+      professor: [
+        in: :query,
+        description: "Professor name",
+        required: false,
+        type: :string,
+        example: "John Doe"
       ]
     ],
     responses: [
@@ -71,7 +79,7 @@ defmodule CoursesWeb.CourseController do
 
   def index(conn, params) do
     conn
-    |> AuthController.fetch_current_user(params)
+    |> AuthController.fetch_current_user()
     |> case do
       %{status: 401} = conn ->
         conn
@@ -95,48 +103,23 @@ defmodule CoursesWeb.CourseController do
     summary: "Create course",
     description: "Create a new course",
     tags: [@tag_course],
-    parameters: [
-      name: [
-        in: :query,
-        name: "name",
-        description: "Course name",
-        required: true,
-        type: :string,
-        example: "Math 101"
-      ],
-      days: [
-        in: :query,
-        name: "days",
-        description: "Days of the week",
-        required: true,
-        type: :string,
-        example: "Tuesday - Thursday"
-      ],
-      time: [
-        in: :query,
-        name: "time",
-        description: "Time of day",
-        required: true,
-        type: :string,
-        example: "10:00 AM - 11:30 AM"
-      ]
-    ],
+    request_body: {"Course details", "application/json", CreateCourseRequest},
     responses: [
       ok: {"Course created", "application/json", CourseResponse},
       internal_server_error: {"Failed to create course", "application/json", FailedResponse}
     ]
   )
 
-  def create(conn, %{"name" => name, "days" => days, "time" => time}) do
+  def create(conn, %{"name" => name, "days" => days, "time" => time, "professor" => professor}) do
     conn
-    |> AuthController.fetch_current_user(%{"name" => name, "days" => days, "time" => time})
-    |> AuthController.admin_only(%{"name" => name, "days" => days, "time" => time})
+    |> AuthController.fetch_current_user()
+    |> AuthController.admin_only()
     |> case do
       %{status: 401} = conn ->
         conn
 
       conn ->
-        case Courses.create_course(name, days, time) do
+        case Courses.create_course(name, days, time, professor) do
           {:ok, course} ->
             conn
             |> put_status(:ok)
@@ -145,7 +128,7 @@ defmodule CoursesWeb.CourseController do
           {:error, reason} ->
             conn
             |> put_status(:internal_server_error)
-            |> render("error.json", %{reason: reason})
+            |> render("error.json", reason: reason)
         end
     end
   end
@@ -171,8 +154,8 @@ defmodule CoursesWeb.CourseController do
 
   def remove(conn, %{"id" => id}) do
     conn
-    |> AuthController.fetch_current_user(%{"id" => id})
-    |> AuthController.admin_only(%{"id" => id})
+    |> AuthController.fetch_current_user()
+    |> AuthController.admin_only()
     |> case do
       %{status: 401} = conn ->
         conn

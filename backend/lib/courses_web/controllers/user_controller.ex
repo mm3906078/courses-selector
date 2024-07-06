@@ -95,7 +95,7 @@ defmodule CoursesWeb.UserController do
   end
 
   operation(:courses,
-    summary: "List courses",
+    summary: "List courses of student",
     description: "List all courses",
     tags: [@tag_user],
     responses: [
