@@ -55,13 +55,6 @@ defmodule CoursesWeb.CourseController do
         type: :array,
         example: ["Monday", "Wednesday"]
       ],
-      time: [
-        in: :query,
-        description: "Time of day",
-        required: false,
-        type: :string,
-        example: "10:00 AM - 11:30 AM"
-      ],
       professor: [
         in: :query,
         description: "Professor name",

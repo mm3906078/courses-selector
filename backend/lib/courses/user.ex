@@ -89,7 +89,17 @@ defmodule Courses.User do
   end
 
   def list_courses(user) do
-    user = Enum.into(user, %{}, fn {k, v} -> {String.to_atom(k), v} end)
+    user =
+      Enum.into(user, %{}, fn {k, v} ->
+        key =
+          if is_binary(k) do
+            String.to_atom(k)
+          else
+            k
+          end
+
+        {key, v}
+      end)
 
     if !user_exists?(user.student_id) do
       {:error, "User not found"}
@@ -234,8 +244,72 @@ defmodule Courses.User do
     Map.delete(user, :password)
   end
 
-  defp enroll_user_possible?(user, course_id) do
-    # Check time and day conflicts
-    true
+  def enroll_user_possible?(user, course_id) do
+    case list_courses(user) do
+      {:ok, current_courses} ->
+        case EtcdEx.get(Courses.Etcd, "courses/#{course_id}") do
+          {:ok, %{kvs: [kv | _]}} ->
+            case Jason.decode(kv.value) do
+              {:ok, new_course} ->
+                if has_conflict?(new_course, current_courses) do
+                  false
+                else
+                  true
+                end
+
+              {:error, _} ->
+                false
+            end
+
+          {:ok, %{kvs: []}} ->
+            false
+
+          {:error, _} ->
+            false
+        end
+
+      {:error, _reason} ->
+        false
+    end
+  end
+
+  defp has_conflict?(new_course, current_courses) do
+    Enum.any?(current_courses, fn course ->
+      Enum.any?(course["days"], fn day -> day in new_course["days"] end) &&
+        time_conflict?(course["time"], new_course["time"])
+    end)
+  end
+
+  defp time_conflict?(time1, time2) do
+    {start1, end1} = parse_time_range(time1)
+    {start2, end2} = parse_time_range(time2)
+    start1 < end2 && start2 < end1
+  end
+
+  defp parse_time_range(time_range) do
+    [start_time, end_time] = String.split(time_range, " - ")
+    {parse_time(start_time), parse_time(end_time)}
+  end
+
+  defp parse_time(time) do
+    [hours, rest] = String.split(time, ":")
+    minutes = String.slice(rest, 0, 2)
+    period = String.slice(rest, -2, 2)
+
+    hours = String.to_integer(hours)
+    minutes = String.to_integer(minutes)
+
+    cond do
+      period == "PM" and hours != 12 ->
+        hours = hours + 12
+
+      period == "AM" and hours == 12 ->
+        hours = 0
+
+      true ->
+        :ok
+    end
+
+    hours + minutes / 60
   end
 end

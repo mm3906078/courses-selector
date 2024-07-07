@@ -51,22 +51,18 @@ defmodule Courses.Courses do
         courses =
           res.kvs
           |> Enum.map(&parse_course/1)
-          # Remove any nil values
           |> Enum.filter(& &1)
 
         Logger.info("Courses: #{inspect(courses)}")
 
-        # Separate limit, page, days, and time from other filters
         limit = Map.get(params, "limit")
         page = Map.get(params, "page")
         days = Map.get(params, "days")
-        time = Map.get(params, "time")
 
-        filters = Map.drop(params, ["limit", "page", "days", "time"])
+        filters = Map.drop(params, ["limit", "page", "days"])
 
         Logger.debug("Filters: #{inspect(filters)}")
 
-        # Parse days into a list
         parsed_days = if days, do: parse_days(days), else: []
 
         filtered_courses =
@@ -75,8 +71,7 @@ defmodule Courses.Courses do
               {key, value} ->
                 value == nil or value == "" or Map.get(course, key) == value
             end) and
-              (parsed_days == [] or Enum.any?(parsed_days, &(&1 in course["days"]))) and
-              (time == nil or time == "" or within_time_range?(course["time"], time))
+              (parsed_days == [] or Enum.any?(parsed_days, &(&1 in course["days"])))
           end)
 
         paginated_courses =
