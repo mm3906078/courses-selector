@@ -5,7 +5,7 @@ defmodule Courses.Application do
   def start(_type, _args) do
     children = [
       {Phoenix.PubSub, name: Courses.PubSub},
-      {EtcdEx, name: Courses.Etcd, endpoints: ["http://localhost:2379"]},
+      {EtcdEx, name: Courses.Etcd, endpoint: {:http, "etcd", 2379, []}},
       CoursesWeb.Endpoint
     ]
 
