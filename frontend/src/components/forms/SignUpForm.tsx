@@ -76,21 +76,23 @@ const LoginForm = () => {
     <Box
       height="100vh"
       display="flex"
-      justifyContent="center"
+      justifyContent="space-between"
       alignItems="center"
       flexDirection="row-reverse"
-      padding="50px 140px"
+      padding="40px 140px 0 40px"
+      gap="100px"
+      overflow="auto"
     >
       <img
-        style={{ flexBasis: "50%", height: "100%", objectFit: "contain" }}
+        style={{ height: "100%", width: "50vw", objectFit: "cover" }}
         src={LoginBg}
         alt="login background"
       />
       <Box
         display="flex"
         flexDirection="column"
-        flexBasis="50%"
         minWidth="400px"
+        width="50vw"
         border="1px solid #C3C3C3"
         borderRadius="15px"
         padding="40px 60px"
