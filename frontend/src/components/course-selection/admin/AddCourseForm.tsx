@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "../../../api/axiosInstance";
+import { convertToAMPM } from "../../../utils";
 
 type CourseInputs = {
   name: string;
@@ -30,23 +31,6 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
   const { t } = useTranslation();
   const [daysOfWeek, setDaysOfWeek] = useState<string[]>([]);
   const [showDaysError, setShowDaysError] = useState(false);
-
-  const formatTime = (fromTime: string, toTime: string): string => {
-    let formattedTime = "";
-    formattedTime +=
-      Number(fromTime.substring(0, 2)) > 12
-        ? `${Number(fromTime.substring(0, 2)) - 12}:${fromTime.substring(
-            3
-          )} PM - `
-        : `${fromTime} AM - `;
-
-    formattedTime +=
-      Number(toTime.substring(0, 2)) > 12
-        ? `${Number(toTime.substring(0, 2)) - 12}:${toTime.substring(3)} PM`
-        : `${toTime} AM`;
-
-    return formattedTime;
-  };
 
   const toast = useToast();
   const {
@@ -85,16 +69,13 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
       setShowDaysError(true);
       return;
     }
-    const formattedTime = formatTime(
-      values.fromTime as string,
-      values.toTime as string
-    );
 
     mutation.mutate({
       days: daysOfWeek,
       name: values.name,
       professor: values.professor,
-      time: formattedTime,
+      time:
+        convertToAMPM(values.fromTime) + " - " + convertToAMPM(values.toTime),
     });
   };
 
