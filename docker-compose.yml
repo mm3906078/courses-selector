@@ -9,7 +9,7 @@ services:
     #   - '127.0.0.1:2379:2379' # client port
     #   - '127.0.0.1:2380:2380' # peer port
     volumes:
-      - etcd-data:/etcd_data
+      - etcd-data:/bitnami/etcd
   backend:
     container_name: backend
     build:

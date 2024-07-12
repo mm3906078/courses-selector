@@ -36,3 +36,7 @@ You can access the application Swagger by following the link: http://localhost:4
 ```
 docker compose up -d --force-recreate --no-deps --build
 ```
+Also for connecting to etcd database you can use this command:
+```
+docker exec -it etcd /bin/sh -c "ETCDCTL_API=3 etcdctl --endpoints=http://localhost:2379 get users/ --prefix"
+```

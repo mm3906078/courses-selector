@@ -112,16 +112,39 @@ defmodule CoursesWeb.CourseController do
         conn
 
       conn ->
-        case Courses.create_course(name, days, time, professor) do
-          {:ok, course} ->
-            conn
-            |> put_status(:ok)
-            |> render("create.json", course: course)
+        with true <- not Enum.empty?(days),
+             true <-
+               Enum.all?(
+                 days,
+                 &(&1 in [
+                     "Monday",
+                     "Tuesday",
+                     "Wednesday",
+                     "Thursday",
+                     "Friday",
+                     "Saturday",
+                     "Sunday"
+                   ])
+               ),
+             true <- Regex.match?(~r/\d{1,2}:\d{2} (AM|PM) - \d{1,2}:\d{2} (AM|PM)/, time),
+             true <- name != "",
+             true <- professor != "" do
+          case Courses.create_course(name, days, time, professor) do
+            {:ok, course} ->
+              conn
+              |> put_status(:ok)
+              |> render("create.json", course: course)
 
-          {:error, reason} ->
+            {:error, reason} ->
+              conn
+              |> put_status(:internal_server_error)
+              |> render("error.json", reason: reason)
+          end
+        else
+          false ->
             conn
             |> put_status(:internal_server_error)
-            |> render("error.json", reason: reason)
+            |> render("error.json", reason: "Invalid course data")
         end
     end
   end
