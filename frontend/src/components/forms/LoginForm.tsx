@@ -19,6 +19,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import LoginBg from "../../assets/images/login-bg.png";
+import { axiosInstance } from "../../api/axiosInstance";
 
 type LoginValues = {
   email: string;
@@ -41,7 +42,7 @@ const LoginForm = () => {
 
   const mutation = useMutation({
     mutationFn: (values: LoginValues) => {
-      return axios.post("http://localhost:4000/api/v1/login", values);
+      return axiosInstance.post("/login", values);
     },
     onSuccess: (res) => {
       localStorage.setItem("token", res.data.token);
