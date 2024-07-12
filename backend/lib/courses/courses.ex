@@ -25,8 +25,10 @@ defmodule Courses.Courses do
         {:error, "Time conflict or invalid time"}
       {:error, reason} ->
         {:error, reason}
+      true when is_boolean(true) ->
+        {:error, "Time conflict with existing course and same professor"}
       _ ->
-        {:error, "Unknown error"}
+        {:error, "Failed to create course"}
     end
   end
 
