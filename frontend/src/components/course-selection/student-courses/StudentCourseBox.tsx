@@ -49,6 +49,14 @@ const StudentCourseBox = (props: Course) => {
         duration: 3000,
       });
     },
+    onError(error: any) {
+      toast({
+        title: "Error!",
+        description: `${error.response.data.error}`,
+        status: "error",
+        duration: 3000,
+      });
+    },
   });
 
   const formatDays = (days: string[]): string => {

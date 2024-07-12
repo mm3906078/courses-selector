@@ -46,4 +46,5 @@ export default {
   searchCourse: "جستجوی درس",
   noCoursesYet: "هیچ درسی یافت نشد",
   timeIsRequired: "ساعت درس الزامی است",
+  clearParams: "حذف فیلتر",
 };

@@ -46,4 +46,5 @@ export default {
   searchCourse: "Search Course",
   noCoursesYet: "No Courses Yet",
   timeIsRequired: "Time Is Required",
+  clearParams: "Clear Filters",
 };
