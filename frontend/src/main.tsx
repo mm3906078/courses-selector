@@ -1,15 +1,15 @@
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
+import "./assets/css/Fontiran.css";
+import "./assets/css/Roboto.css";
 import router from "./routes.tsx";
-// import Fonts from "./Fonts.tsx";
 
 import "./i18n";
 
 const queryClient = new QueryClient();
-// const [direction, setDirection] = useState("rtl");
 
 const theme = extendTheme({
   colors: {
@@ -17,10 +17,10 @@ const theme = extendTheme({
       400: "#FB881D",
     },
   },
-  // fonts: {
-  //   heading: `'IranSans', sans-serif`,
-  //   body: `'IranSans', sans-serif`,
-  // },
+  fonts: {
+    heading: `'IranSans','Roboto', sans-serif`,
+    body: `'IranSans','Roboto', sans-serif`,
+  },
   // direction,
 });
 

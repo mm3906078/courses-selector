@@ -70,6 +70,7 @@ const AllCoursesHeader = (props: Props) => {
                 {t("searchCourse")}
               </Text>
               <IconButton
+                onClick={onClose}
                 bg="transparent"
                 aria-label="close icon"
                 icon={<IoIosCloseCircleOutline size={30} />}
