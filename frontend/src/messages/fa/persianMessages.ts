@@ -45,4 +45,5 @@ export default {
   unenrollCourseConfirmMessage: "آیا از حذف درس مطمئنید؟",
   searchCourse: "جستجوی درس",
   noCoursesYet: "هیچ درسی یافت نشد",
+  timeIsRequired: "ساعت درس الزامی است",
 };

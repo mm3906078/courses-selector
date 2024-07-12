@@ -92,6 +92,7 @@ const LoginForm = () => {
         display="flex"
         flexDirection="column"
         flexBasis="50%"
+        minWidth="400px"
         border="1px solid #C3C3C3"
         borderRadius="15px"
         padding="40px 60px"

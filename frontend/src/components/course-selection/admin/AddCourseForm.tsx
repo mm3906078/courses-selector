@@ -60,8 +60,6 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
       return axiosInstance.post("/courses/create", values);
     },
     onSuccess: (res) => {
-      console.log(res);
-
       toast({
         title: t("courseAddedTitle"),
         description: `Course Added with id of ${res.data.course.course_id}`,
@@ -90,7 +88,7 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
 
   return (
     <form onSubmit={handleSubmit(submitHandler)}>
-      <FormControl>
+      <FormControl isInvalid={!!errors.name}>
         <FormLabel>{t("courseName")}</FormLabel>
         <Input
           {...register("name", {
@@ -98,8 +96,11 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
           })}
           bg="#F3F4FF"
         />
+        <FormErrorMessage>
+          {errors.name && errors.name.message}
+        </FormErrorMessage>
       </FormControl>
-      <FormControl mt="20px">
+      <FormControl isInvalid={!!errors.professor} mt="20px">
         <FormLabel>{t("professor")}</FormLabel>
         <Input
           {...register("professor", {
@@ -107,6 +108,9 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
           })}
           bg="#F3F4FF"
         />
+        <FormErrorMessage>
+          {errors.professor && errors.professor.message}
+        </FormErrorMessage>
       </FormControl>
 
       <FormControl mt="20px" as="fieldset">
@@ -135,7 +139,7 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
         </CheckboxGroup>
       </FormControl>
 
-      <FormControl mt="20px">
+      <FormControl isInvalid={!!errors.fromTime || !!errors.toTime} mt="20px">
         <FormLabel>{t("classTime")}</FormLabel>
         <Box
           display="flex"
@@ -158,6 +162,9 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
             bg="#F3F4FF"
           />
         </Box>
+        <FormErrorMessage>
+          {(errors.fromTime || errors.toTime) && t("timeIsRequired")}
+        </FormErrorMessage>
       </FormControl>
 
       <Box mt="20px" display="flex" justifyContent="center" alignItems="center">
