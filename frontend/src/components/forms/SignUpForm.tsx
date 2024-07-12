@@ -19,6 +19,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import LoginBg from "../../assets/images/login-bg.png";
+import { axiosInstance } from "../../api/axiosInstance";
 
 type RegisterValues = {
   email: string;
@@ -42,14 +43,12 @@ const LoginForm = () => {
 
   const mutation = useMutation({
     mutationFn: (values: RegisterValues) => {
-      return axios.post("http://localhost:4000/api/v1/register", {
+      return axiosInstance.post("/register", {
         ...values,
         role: "student",
       });
     },
     onSuccess: (res) => {
-      console.log(res);
-
       navigate("/login");
       toast({
         title: "Account Created Successfully!",
