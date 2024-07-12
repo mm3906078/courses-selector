@@ -14,6 +14,7 @@ defmodule CoursesWeb.Router do
 
   pipeline :api do
     plug(:accepts, ["json"])
+    plug CORSPlug
     plug(OpenApiSpex.Plug.PutApiSpec, module: CoursesWeb.ApiSpec)
   end
 

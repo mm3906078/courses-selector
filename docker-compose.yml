@@ -5,9 +5,9 @@ services:
     environment:
       - ALLOW_NONE_AUTHENTICATION=yes
       - ETCD_ADVERTISE_CLIENT_URLS=http://localhost:2379
-    ports:
-      - '127.0.0.1:2379:2379' # client port
-      - '127.0.0.1:2380:2380' # peer port
+    # ports:
+    #   - '127.0.0.1:2379:2379' # client port
+    #   - '127.0.0.1:2380:2380' # peer port
     volumes:
       - etcd-data:/etcd_data
   backend:
@@ -19,6 +19,15 @@ services:
       - '127.0.0.1:4000:4000' # backend port
     depends_on:
       - etcd
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '127.0.0.1:3000:3000' # frontend port
+    depends_on:
+      - backend
 
 volumes:
   etcd-data:
