@@ -47,4 +47,7 @@ export default {
   noCoursesYet: "هیچ درسی یافت نشد",
   timeIsRequired: "ساعت درس الزامی است",
   clearParams: "حذف فیلتر",
+  professorRequired: "نام استاد الزامی است",
+  nameRequired: "نام درس الزامی است",
+  daysRequired: "روز های درس الزامی است",
 };

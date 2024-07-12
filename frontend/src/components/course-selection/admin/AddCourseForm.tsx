@@ -29,6 +29,7 @@ type CourseInputs = {
 const AddCourseForm = (props: { onSubmitForm: () => void }) => {
   const { t } = useTranslation();
   const [daysOfWeek, setDaysOfWeek] = useState<string[]>([]);
+  const [showDaysError, setShowDaysError] = useState(false);
 
   const formatTime = (fromTime: string, toTime: string): string => {
     let formattedTime = "";
@@ -69,10 +70,21 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
       queryClient.invalidateQueries({ queryKey: ["total-courses"] });
       props.onSubmitForm();
     },
-    // onError: (error: any) => {},
+    onError: (error: any) => {
+      toast({
+        title: t("error"),
+        description: `${error.response.data.error}`,
+        status: "error",
+        duration: 3000,
+      });
+    },
   });
 
   const submitHandler: SubmitHandler<CourseInputs> = (values) => {
+    if (daysOfWeek.length === 0) {
+      setShowDaysError(true);
+      return;
+    }
     const formattedTime = formatTime(
       values.fromTime as string,
       values.toTime as string
@@ -92,7 +104,7 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
         <FormLabel>{t("courseName")}</FormLabel>
         <Input
           {...register("name", {
-            required: "course name is required",
+            required: t("nameRequired"),
           })}
           bg="#F3F4FF"
         />
@@ -104,7 +116,7 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
         <FormLabel>{t("professor")}</FormLabel>
         <Input
           {...register("professor", {
-            required: "professor name is required",
+            required: t("professorRequired"),
           })}
           bg="#F3F4FF"
         />
@@ -137,6 +149,9 @@ const AddCourseForm = (props: { onSubmitForm: () => void }) => {
             <Checkbox value="Thursday">{t("thursday")}</Checkbox>
           </Stack>
         </CheckboxGroup>
+        {showDaysError && (
+          <FormErrorMessage>{t("daysRequired")}</FormErrorMessage>
+        )}
       </FormControl>
 
       <FormControl isInvalid={!!errors.fromTime || !!errors.toTime} mt="20px">
