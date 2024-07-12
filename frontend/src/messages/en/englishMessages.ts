@@ -1,0 +1,20 @@
+export default {
+  logout: "Logout",
+  login: "Login",
+  accept: "Accept",
+  signup: "Signup",
+  dontHaveAccount: "Don't have account?",
+  alreadyHaveAccount: "Already have account?",
+  email: "Email",
+  password: "Password",
+  name: "Name",
+  formMessages: {
+    passwordIsRequired: "Password is required",
+    emailIsRequired: "Email is required",
+    nameIsRequired: "Name is required",
+  },
+  courseSelectionSystem: "Course selection system",
+  definedCourses: "Available Courses",
+  selectedCourses: "Selected Courses",
+  doSearch: "Search",
+};
